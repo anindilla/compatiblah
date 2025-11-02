@@ -1,11 +1,11 @@
 <template>
-  <div v-if="results" class="space-y-4 sm:space-y-6 md:space-y-8 animate-fadeIn">
+  <div v-if="results && (results.friend_score > 0 || results.coworker_score > 0 || results.partner_score > 0)" class="space-y-4 sm:space-y-6 md:space-y-8 animate-fadeIn">
     <!-- Overall Header -->
     <div class="bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 rounded-2xl sm:rounded-3xl shadow-2xl p-5 sm:p-7 md:p-9 lg:p-10 text-white border-4 border-orange-400/50 backdrop-blur-sm">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 md:mb-6">
         <div class="flex items-center gap-2 sm:gap-3">
           <span class="text-xl sm:text-2xl md:text-3xl lg:text-4xl">🔍</span>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">Compatibility Analysis</h2>
+          <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">Compatibility Analysis</h2>
         </div>
         <div class="flex items-center gap-2 bg-white/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-sm self-start sm:self-auto">
           <span class="text-lg sm:text-xl md:text-2xl font-bold">{{ results.overall_score }}</span>
@@ -13,7 +13,7 @@
         </div>
       </div>
       <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-3 md:gap-4">
-        <span class="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold">Overall Compatibility Score:</span>
+        <span class="text-sm sm:text-base md:text-lg lg:text-xl font-semibold">Overall Compatibility Score:</span>
         <div class="flex gap-1 sm:gap-1.5">
           <span
             v-for="i in 5"
@@ -64,7 +64,7 @@
               :key="idx"
               class="space-y-3 sm:space-y-4"
             >
-              <h4 class="text-sm sm:text-base md:text-lg font-bold text-orange-600 dark:text-orange-400 border-b border-orange-200 dark:border-orange-800 pb-1.5 sm:pb-2">
+              <h4 class="text-base sm:text-lg md:text-xl font-bold text-orange-600 dark:text-orange-400 border-b border-orange-200 dark:border-orange-800 pb-1.5 sm:pb-2">
                 {{ section.heading || 'Compatibility Analysis' }}
               </h4>
               <div v-if="section.subcategories && section.subcategories.length > 0" class="space-y-3 sm:space-y-4 ml-1 sm:ml-2">
@@ -73,14 +73,14 @@
                   :key="subIdx"
                   class="space-y-1.5 sm:space-y-2"
                 >
-                  <h5 class="text-xs sm:text-sm md:text-base font-semibold text-gray-700 dark:text-gray-300">
+                  <h5 class="text-sm sm:text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300">
                     {{ subcat.title }}
                   </h5>
                   <ul class="list-disc list-inside space-y-1 sm:space-y-1.5 ml-2 sm:ml-3">
                     <li
                       v-for="(bullet, bulletIdx) in subcat.bullets"
                       :key="bulletIdx"
-                      class="text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed"
+                      class="text-sm sm:text-base md:text-lg text-gray-700 dark:text-gray-300 leading-relaxed"
                     >
                       {{ bullet.text }}
                     </li>
@@ -92,7 +92,15 @@
               </p>
             </div>
           </template>
-          <p v-else class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">Analysis details are being prepared...</p>
+          <div v-else class="flex items-center justify-center py-4">
+            <div class="flex items-center gap-2 text-orange-600 dark:text-orange-400">
+              <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-sm sm:text-base">Analyzing...</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -130,7 +138,7 @@
               :key="idx"
               class="space-y-3 sm:space-y-4"
             >
-              <h4 class="text-sm sm:text-base md:text-lg font-bold text-orange-600 dark:text-orange-400 border-b border-orange-200 dark:border-orange-800 pb-1.5 sm:pb-2">
+              <h4 class="text-base sm:text-lg md:text-xl font-bold text-orange-600 dark:text-orange-400 border-b border-orange-200 dark:border-orange-800 pb-1.5 sm:pb-2">
                 {{ section.heading || 'Compatibility Analysis' }}
               </h4>
               <div v-if="section.subcategories && section.subcategories.length > 0" class="space-y-3 sm:space-y-4 ml-1 sm:ml-2">
@@ -139,14 +147,14 @@
                   :key="subIdx"
                   class="space-y-1.5 sm:space-y-2"
                 >
-                  <h5 class="text-xs sm:text-sm md:text-base font-semibold text-gray-700 dark:text-gray-300">
+                  <h5 class="text-sm sm:text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300">
                     {{ subcat.title }}
                   </h5>
                   <ul class="list-disc list-inside space-y-1 sm:space-y-1.5 ml-2 sm:ml-3">
                     <li
                       v-for="(bullet, bulletIdx) in subcat.bullets"
                       :key="bulletIdx"
-                      class="text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed"
+                      class="text-sm sm:text-base md:text-lg text-gray-700 dark:text-gray-300 leading-relaxed"
                     >
                       {{ bullet.text }}
                     </li>
@@ -158,7 +166,15 @@
               </p>
             </div>
           </template>
-          <p v-else class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">Analysis details are being prepared...</p>
+          <div v-else class="flex items-center justify-center py-4">
+            <div class="flex items-center gap-2 text-orange-600 dark:text-orange-400">
+              <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-sm sm:text-base">Analyzing...</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -196,7 +212,7 @@
               :key="idx"
               class="space-y-3 sm:space-y-4"
             >
-              <h4 class="text-sm sm:text-base md:text-lg font-bold text-orange-600 dark:text-orange-400 border-b border-orange-200 dark:border-orange-800 pb-1.5 sm:pb-2">
+              <h4 class="text-base sm:text-lg md:text-xl font-bold text-orange-600 dark:text-orange-400 border-b border-orange-200 dark:border-orange-800 pb-1.5 sm:pb-2">
                 {{ section.heading || 'Compatibility Analysis' }}
               </h4>
               <div v-if="section.subcategories && section.subcategories.length > 0" class="space-y-3 sm:space-y-4 ml-1 sm:ml-2">
@@ -205,14 +221,14 @@
                   :key="subIdx"
                   class="space-y-1.5 sm:space-y-2"
                 >
-                  <h5 class="text-xs sm:text-sm md:text-base font-semibold text-gray-700 dark:text-gray-300">
+                  <h5 class="text-sm sm:text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300">
                     {{ subcat.title }}
                   </h5>
                   <ul class="list-disc list-inside space-y-1 sm:space-y-1.5 ml-2 sm:ml-3">
                     <li
                       v-for="(bullet, bulletIdx) in subcat.bullets"
                       :key="bulletIdx"
-                      class="text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed"
+                      class="text-sm sm:text-base md:text-lg text-gray-700 dark:text-gray-300 leading-relaxed"
                     >
                       {{ bullet.text }}
                     </li>
@@ -224,7 +240,15 @@
               </p>
             </div>
           </template>
-          <p v-else class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">Analysis details are being prepared...</p>
+          <div v-else class="flex items-center justify-center py-4">
+            <div class="flex items-center gap-2 text-orange-600 dark:text-orange-400">
+              <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-sm sm:text-base">Analyzing...</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

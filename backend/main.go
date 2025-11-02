@@ -67,6 +67,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/assess", handlers.AssessCompatibility)
+		api.POST("/assess/category", handlers.AssessCategory)
 		api.GET("/assessment/:id", handlers.GetAssessment)
 		api.GET("/assessments", handlers.GetAllAssessments)
 	}

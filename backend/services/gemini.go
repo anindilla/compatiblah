@@ -182,6 +182,130 @@ func AssessCompatibility(person1, person2 models.PersonData) (*models.GeminiResp
 	return &result, nil
 }
 
+// CategoryResponse represents a single category assessment result
+type CategoryResponse struct {
+	Score       int                    `json:"score"`
+	Explanation models.CategoryExplanation `json:"explanation"`
+}
+
+// AssessCategoryCompatibility generates compatibility assessment for a single category
+func AssessCategoryCompatibility(person1, person2 models.PersonData, category string) (*CategoryResponse, error) {
+	apiKey := os.Getenv("GEMINI_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("GEMINI_API_KEY environment variable not set")
+	}
+
+	// Build the category-specific prompt
+	prompt := buildCategoryPrompt(person1, person2, category)
+
+	// Prepare the request payload
+	payload := map[string]interface{}{
+		"contents": []map[string]interface{}{
+			{
+				"parts": []map[string]interface{}{
+					{
+						"text": prompt,
+					},
+				},
+			},
+		},
+	}
+
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	// Make the API call
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=%s", apiKey)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payloadJSON))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API error: status %d, body: %s", resp.StatusCode, string(body))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	// Parse Gemini response
+	var geminiResp struct {
+		Candidates []struct {
+			Content struct {
+				Parts []struct {
+					Text string `json:"text"`
+				} `json:"parts"`
+			} `json:"content"`
+		} `json:"candidates"`
+	}
+
+	if err := json.Unmarshal(body, &geminiResp); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	if len(geminiResp.Candidates) == 0 || len(geminiResp.Candidates[0].Content.Parts) == 0 {
+		return nil, fmt.Errorf("no content in response")
+	}
+
+	text := geminiResp.Candidates[0].Content.Parts[0].Text
+
+	// Extract JSON from the response text
+	jsonText := extractJSON(text)
+	jsonText = cleanJSONForParsing(jsonText)
+
+	// Try to parse as structured format
+	var result struct {
+		Score       int                            `json:"score"`
+		Explanation models.CategoryExplanation `json:"explanation"`
+	}
+	
+	err = json.Unmarshal([]byte(jsonText), &result)
+	
+	// If parsing fails, try old format
+	if err != nil {
+		var oldFormat struct {
+			Score       int    `json:"score"`
+			Explanation string `json:"explanation"`
+		}
+		
+		if oldErr := json.Unmarshal([]byte(jsonText), &oldFormat); oldErr == nil {
+			result = struct {
+				Score       int                            `json:"score"`
+				Explanation models.CategoryExplanation `json:"explanation"`
+			}{
+				Score:       oldFormat.Score,
+				Explanation: convertStringToStructured(oldFormat.Explanation, category),
+			}
+		} else {
+			return nil, fmt.Errorf("failed to parse category assessment JSON: %w", err)
+		}
+	}
+
+	// Validate score
+	if result.Score < 1 || result.Score > 5 {
+		result.Score = 3
+	}
+
+	return &CategoryResponse{
+		Score:       result.Score,
+		Explanation: result.Explanation,
+	}, nil
+}
+
 func buildPrompt(person1, person2 models.PersonData) string {
 	prompt := fmt.Sprintf(`You are a compatibility assessment expert. Analyze the compatibility between two people based on ALL the information provided below. You MUST consider and reference ALL details including names, MBTI types, social media profiles, and any additional information when making your assessment.
 
@@ -407,6 +531,201 @@ Return your response as a JSON object with the following EXACT structure (no mar
       },
       {
         "heading": "<Section 3 heading, e.g., 'Long-term Potential & Growth Together'>",
+        "subcategories": [
+          {
+            "title": "<Sub-category title>",
+            "bullets": [
+              {"text": "<3-5 detailed bullets>"}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+
+Scoring guidelines:
+- 5: Exceptional compatibility with natural synergy and minimal friction
+- 4: Strong compatibility with minor areas requiring attention
+- 3: Moderate compatibility with some differences that need conscious effort
+- 2: Challenging compatibility requiring significant compromise and understanding
+- 1: Poor compatibility with fundamental conflicts that are difficult to overcome
+
+Be honest, insightful, and provide genuine value. Reference specific personality traits, social media insights, and additional parameters when relevant. Make each section detailed and actionable.
+
+Return ONLY the raw JSON object, nothing else.`
+
+	return prompt
+}
+
+// buildCategoryPrompt generates a prompt for a single compatibility category
+func buildCategoryPrompt(person1, person2 models.PersonData, category string) string {
+	categoryContext := ""
+	
+	switch category {
+	case "friend":
+		categoryContext = "as friends"
+	case "coworker":
+		categoryContext = "as coworkers"
+	case "partner":
+		categoryContext = "as partners in a romantic relationship"
+	default:
+		categoryContext = "in general"
+	}
+
+	prompt := fmt.Sprintf(`You are a compatibility assessment expert. Analyze the compatibility between two people %s based on ALL the information provided below. You MUST consider and reference ALL details including names, MBTI types, social media profiles, and any additional information when making your assessment.
+
+PERSON 1:
+- Name: %s
+- MBTI Type: %s`, categoryContext, person1.Name, person1.MBTI)
+
+	// Include social media information (optional - only if available and accessible)
+	if len(person1.SocialMedia) > 0 {
+		prompt += "\n- Social Media Profiles (OPTIONAL - only use if accessible and provides meaningful insights):"
+		for _, sm := range person1.SocialMedia {
+			if sm.Platform != "" && sm.Handle != "" {
+				prompt += fmt.Sprintf("\n  * %s: %s", sm.Platform, sm.Handle)
+			}
+		}
+		prompt += "\n  → NOTE: If these profiles are private, locked, or not accessible, SKIP using them entirely. Only reference social media if it provides genuine insights. Do not force analysis based on unavailable or private profiles."
+	}
+
+	if len(person1.AdditionalParams) > 0 {
+		prompt += "\n- Additional Information (IMPORTANT - incorporate these into your analysis):"
+		for _, param := range person1.AdditionalParams {
+			if param.Key != "" && param.Value != "" {
+				prompt += fmt.Sprintf("\n  * %s: %s", param.Key, param.Value)
+			}
+		}
+		prompt += "\n  → Actively use these additional parameters (like zodiac signs, DISC personality, Enneagram, etc.) to provide a more nuanced and comprehensive compatibility assessment."
+	}
+
+	prompt += fmt.Sprintf(`
+
+PERSON 2:
+- Name: %s
+- MBTI Type: %s`, person2.Name, person2.MBTI)
+
+	// Include social media information (optional - only if available and accessible)
+	if len(person2.SocialMedia) > 0 {
+		prompt += "\n- Social Media Profiles (OPTIONAL - only use if accessible and provides meaningful insights):"
+		for _, sm := range person2.SocialMedia {
+			if sm.Platform != "" && sm.Handle != "" {
+				prompt += fmt.Sprintf("\n  * %s: %s", sm.Platform, sm.Handle)
+			}
+		}
+		prompt += "\n  → NOTE: If these profiles are private, locked, or not accessible, SKIP using them entirely. Only reference social media if it provides genuine insights. Do not force analysis based on unavailable or private profiles."
+	}
+
+	if len(person2.AdditionalParams) > 0 {
+		prompt += "\n- Additional Information (IMPORTANT - incorporate these into your analysis):"
+		for _, param := range person2.AdditionalParams {
+			if param.Key != "" && param.Value != "" {
+				prompt += fmt.Sprintf("\n  * %s: %s", param.Key, param.Value)
+			}
+		}
+		prompt += "\n  → Actively use these additional parameters (like zodiac signs, DISC personality, Enneagram, etc.) to provide a more nuanced and comprehensive compatibility assessment."
+	}
+
+	// Category-specific instructions
+	categoryInstructions := ""
+	switch category {
+	case "friend":
+		categoryInstructions = `
+You are an expert compatibility analyst with deep knowledge of personality psychology, friendship dynamics, and interpersonal communication. Focus specifically on how these two people would interact as FRIENDS. Consider:
+- Communication styles and preferences
+- Shared interests and activities
+- Emotional support and understanding
+- Potential conflicts and how they might resolve them
+- Complementary personality traits that make them great friends
+- Challenges they might face in the friendship`
+	case "coworker":
+		categoryInstructions = `
+You are an expert compatibility analyst with deep knowledge of personality psychology, workplace dynamics, and professional collaboration. Focus specifically on how these two people would interact as COWORKERS. Consider:
+- Work styles and approaches to tasks
+- Communication in professional settings
+- Collaboration and teamwork potential
+- Problem-solving approaches
+- Complementary professional skills
+- Potential workplace conflicts and how they might handle them`
+	case "partner":
+		categoryInstructions = `
+You are an expert compatibility analyst with deep knowledge of personality psychology, romantic relationship dynamics, and emotional intimacy. Focus specifically on how these two people would interact as ROMANTIC PARTNERS. Consider:
+- Romantic chemistry and emotional connection
+- Communication needs and styles in relationships
+- Shared values and life goals
+- Intimacy and emotional support
+- Conflict resolution in romantic relationships
+- Long-term relationship potential`
+	}
+
+	prompt += categoryInstructions
+
+	prompt += `
+
+CRITICAL INSTRUCTIONS:
+- You MUST reference and incorporate MBTI types and names in your analysis
+- Additional parameters (zodiac, DISC, etc.) provide complementary insights - integrate them meaningfully when provided
+- Social media profiles are OPTIONAL - only use them if:
+  * The profiles are clearly accessible and public
+  * You have genuine insights from them (don't make assumptions)
+  * They add meaningful value to the compatibility assessment
+  * If profiles are private, locked, or inaccessible, SKIP them entirely - do NOT force analysis
+- Never force analysis of unavailable or private social media - it's better to skip than to make incorrect assumptions
+- Focus primarily on MBTI types and provided additional parameters for the most accurate assessment
+
+Provide a structured analysis with AT LEAST 3 distinct sections. Each section should have:
+- A clear heading
+- 2-3 sub-categories with descriptive titles
+- Each sub-category should contain 3-5 bullet points (detailed, not just one word)
+
+Return your response as a JSON object with the following EXACT structure (no markdown, no code blocks):
+{
+  "score": <integer 1-5>,
+  "explanation": {
+    "sections": [
+      {
+        "heading": "<Section 1 heading, e.g., 'Cognitive Compatibility & Communication'>",
+        "subcategories": [
+          {
+            "title": "<Sub-category title, e.g., 'Communication Styles' or 'Strengths'>",
+            "bullets": [
+              {"text": "<Detailed bullet point (3-5 sentences worth of information per bullet). Reference specific MBTI traits, social media insights, or additional parameters.>"},
+              {"text": "<Another detailed bullet point.>"},
+              {"text": "<Third detailed bullet point (3-5 bullets total per sub-category).>"}
+            ]
+          },
+          {
+            "title": "<Sub-category 2 title, e.g., 'Potential Misunderstandings' or 'Challenges'>",
+            "bullets": [
+              {"text": "<Detailed bullet point.>"},
+              {"text": "<Another detailed bullet point.>"},
+              {"text": "<Third detailed bullet point.>"}
+            ]
+          },
+          {
+            "title": "<Sub-category 3 title, e.g., 'Tips for Better Communication' or 'Growth Opportunities'>",
+            "bullets": [
+              {"text": "<Detailed bullet point.>"},
+              {"text": "<Another detailed bullet point.>"},
+              {"text": "<Third detailed bullet point.>"}
+            ]
+          }
+        ]
+      },
+      {
+        "heading": "<Section 2 heading, e.g., 'Strengths & Synergies'>",
+        "subcategories": [
+          {
+            "title": "<Sub-category title, e.g., 'What Makes Them Great Together'>",
+            "bullets": [
+              {"text": "<3-5 detailed bullets describing complementary traits, shared values, etc.>"}
+            ]
+          }
+        ]
+      },
+      {
+        "heading": "<Section 3 heading, e.g., 'Growth Opportunities & Challenges'>",
         "subcategories": [
           {
             "title": "<Sub-category title>",

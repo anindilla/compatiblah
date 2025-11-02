@@ -63,12 +63,13 @@
           <p class="font-medium text-sm sm:text-base">⚠️ {{ error }}</p>
         </div>
 
-        <!-- Results -->
-        <div v-if="results" class="mt-8">
-          <CompatibilityResults
-            :results="results"
-          />
-        </div>
+                <!-- Results -->
+                <div v-if="results && (results.friend_score > 0 || results.coworker_score > 0 || results.partner_score > 0)" class="mt-8">
+                  <CompatibilityResults
+                    :results="results"
+                    :loadingCategory="loadingCategory"
+                  />
+                </div>
       </div>
     </div>
     <Footer />
@@ -122,6 +123,7 @@ const loading = ref(false)
 const error = ref(null)
 const results = ref(null)
 const assessmentId = ref(null)
+const loadingCategory = ref(null) // Track which category is currently loading: "friend", "coworker", "partner", or null
 
 const isFormValid = computed(() => {
   return person1.value.name && person1.value.mbti && person2.value.name && person2.value.mbti
@@ -145,6 +147,7 @@ function resetForm() {
   results.value = null
   error.value = null
   assessmentId.value = null
+  loadingCategory.value = null
   // Scroll to top
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -159,31 +162,54 @@ async function submitAssessment() {
   error.value = null
   results.value = null
   assessmentId.value = null
+  loadingCategory.value = null
 
-          try {
-            const response = await fetch(`${apiUrl.value}/api/assess`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        person1: person1.value,
-        person2: person2.value
+  // Initialize results structure with placeholder values
+  results.value = {
+    friend_score: 0,
+    coworker_score: 0,
+    partner_score: 0,
+    overall_score: 0,
+    friend_explanation: { sections: [] },
+    coworker_explanation: { sections: [] },
+    partner_explanation: { sections: [] }
+  }
+
+  try {
+    const categories = [
+      { key: 'friend', label: 'Friendship' },
+      { key: 'coworker', label: 'Workplace' },
+      { key: 'partner', label: 'Romance' }
+    ]
+
+    // Make sequential API calls for each category
+    for (const category of categories) {
+      loadingCategory.value = category.key
+
+      const response = await fetch(`${apiUrl.value}/api/assess/category`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          person1: person1.value,
+          person2: person2.value,
+          category: category.key
+        })
       })
-    })
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
-    }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`Failed to assess ${category.label}: ${errorData.error || `HTTP error! status: ${response.status}`}`)
+      }
 
-    const data = await response.json()
-    
-    // Log for debugging
-    console.log('Received data:', data)
-    
-    // Normalize explanations to structured format with subcategories and bullets
-    const normalizeExplanation = (explanation) => {
+      const data = await response.json()
+      
+      // Log for debugging
+      console.log(`Received ${category.key} data:`, data)
+      
+      // Normalize explanations to structured format with subcategories and bullets
+      const normalizeExplanation = (explanation) => {
       if (!explanation) {
         return { sections: [] }
       }
@@ -217,10 +243,10 @@ async function submitAssessment() {
       
       // Fallback
       return { sections: [] }
-    }
-    
-    // Convert content string to subcategories with bullets
-    const convertContentToSubcategories = (content) => {
+  }
+  
+  // Convert content string to subcategories with bullets
+  const convertContentToSubcategories = (content) => {
       if (!content) {
         return [{
           title: 'Compatibility Analysis',
@@ -250,25 +276,78 @@ async function submitAssessment() {
         title: 'Compatibility Analysis',
         bullets: [{ text: content }]
       }]
-    }
-    
-    results.value = {
-      friend_score: data.friend_score,
-      coworker_score: data.coworker_score,
-      partner_score: data.partner_score,
-      overall_score: data.overall_score,
-      friend_explanation: normalizeExplanation(data.friend_explanation),
-      coworker_explanation: normalizeExplanation(data.coworker_explanation),
-      partner_explanation: normalizeExplanation(data.partner_explanation)
-    }
-    assessmentId.value = data.id
-    
-    console.log('Normalized results:', results.value)
+  }
 
-    // Scroll to results
-    setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
-    }, 100)
+  try {
+    const categories = [
+      { key: 'friend', label: 'Friendship' },
+      { key: 'coworker', label: 'Workplace' },
+      { key: 'partner', label: 'Romance' }
+    ]
+
+    // Make sequential API calls for each category
+    for (const category of categories) {
+      loadingCategory.value = category.key
+
+      const response = await fetch(`${apiUrl.value}/api/assess/category`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          person1: person1.value,
+          person2: person2.value,
+          category: category.key
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`Failed to assess ${category.label}: ${errorData.error || `HTTP error! status: ${response.status}`}`)
+      }
+
+      const data = await response.json()
+      
+      // Log for debugging
+      console.log(`Received ${category.key} data:`, data)
+      
+      // Update results progressively for this category
+      if (category.key === 'friend') {
+        results.value.friend_score = data.score
+        results.value.friend_explanation = normalizeExplanation(data.explanation)
+      } else if (category.key === 'coworker') {
+        results.value.coworker_score = data.score
+        results.value.coworker_explanation = normalizeExplanation(data.explanation)
+      } else if (category.key === 'partner') {
+        results.value.partner_score = data.score
+        results.value.partner_explanation = normalizeExplanation(data.explanation)
+      }
+
+      // Calculate overall score as average of the three scores
+      const scores = [
+        results.value.friend_score,
+        results.value.coworker_score,
+        results.value.partner_score
+      ].filter(s => s > 0) // Only count completed categories
+      
+      if (scores.length > 0) {
+        results.value.overall_score = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      }
+
+      // Small delay to allow UI to update (optional, for better UX)
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+
+    loadingCategory.value = null
+    
+    console.log('Final normalized results:', results.value)
+
+    // Scroll to results after first category completes
+    if (results.value && results.value.friend_score > 0) {
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+      }, 100)
+    }
   } catch (err) {
     error.value = err.message || 'Failed to assess compatibility. Please try again.'
     console.error('Assessment error:', err)

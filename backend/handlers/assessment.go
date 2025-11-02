@@ -102,3 +102,51 @@ func GetAllAssessments(c *gin.Context) {
 	c.JSON(http.StatusOK, assessments)
 }
 
+// CategoryAssessmentRequest represents a request for a single category assessment
+type CategoryAssessmentRequest struct {
+	Person1 models.PersonData `json:"person1"`
+	Person2 models.PersonData `json:"person2"`
+	Category string           `json:"category"` // "friend", "coworker", or "partner"
+}
+
+func AssessCategory(c *gin.Context) {
+	var req CategoryAssessmentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body: " + err.Error()})
+		return
+	}
+
+	// Validate required fields
+	if req.Person1.Name == "" || req.Person1.MBTI == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Person 1 must have a name and MBTI type"})
+		return
+	}
+
+	if req.Person2.Name == "" || req.Person2.MBTI == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Person 2 must have a name and MBTI type"})
+		return
+	}
+
+	// Validate category
+	if req.Category != "friend" && req.Category != "coworker" && req.Category != "partner" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Category must be 'friend', 'coworker', or 'partner'"})
+		return
+	}
+
+	// Call Gemini API for single category
+	categoryResp, err := services.AssessCategoryCompatibility(req.Person1, req.Person2, req.Category)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assess category compatibility: " + err.Error()})
+		return
+	}
+
+	// Return response
+	response := gin.H{
+		"category":    req.Category,
+		"score":       categoryResp.Score,
+		"explanation": categoryResp.Explanation,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
