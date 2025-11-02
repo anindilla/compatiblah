@@ -3,8 +3,8 @@ services:
     name: compatiblah-backend
     env: go
     plan: free
-    buildCommand: go mod download && cd backend && go build -o app
-    startCommand: cd backend && ./app
+    buildCommand: go mod download && cd backend && go build -o ../app
+    startCommand: ./app
     healthCheckPath: /health
     envVars:
       - key: GEMINI_API_KEY
