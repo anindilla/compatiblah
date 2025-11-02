@@ -507,13 +507,11 @@ onMounted(() => {
   // Cleanup on unmount
   onUnmounted(() => {
     window.removeEventListener('resize', handleResize)
+    if (observer) {
+      observer.disconnect()
+      observer = null
+    }
   })
-})
-
-onUnmounted(() => {
-  if (observer) {
-    observer.disconnect()
-  }
 })
 </script>
 
