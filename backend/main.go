@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 	"compatiblah/backend/db"
 	"compatiblah/backend/handlers"
 	"github.com/gin-contrib/cors"
@@ -26,12 +27,29 @@ func main() {
 	// Setup Gin router
 	r := gin.Default()
 
-	// CORS configuration
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"}
-	config.AllowMethods = []string{"GET", "POST", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
-	r.Use(cors.New(config))
+	// CORS configuration - allow all origins in production, specific origins in development
+	corsOrigins := os.Getenv("CORS_ORIGINS")
+	if corsOrigins == "" {
+		// Default: allow all origins (useful for production)
+		config := cors.DefaultConfig()
+		config.AllowAllOrigins = true
+		config.AllowMethods = []string{"GET", "POST", "OPTIONS"}
+		config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"}
+		config.AllowCredentials = false
+		r.Use(cors.New(config))
+	} else {
+		// Custom origins from environment variable (comma-separated)
+		config := cors.DefaultConfig()
+		origins := []string{}
+		for _, origin := range strings.Split(corsOrigins, ",") {
+			origins = append(origins, strings.TrimSpace(origin))
+		}
+		config.AllowOrigins = origins
+		config.AllowMethods = []string{"GET", "POST", "OPTIONS"}
+		config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"}
+		config.AllowCredentials = false
+		r.Use(cors.New(config))
+	}
 
 	// API routes
 	api := r.Group("/api")
