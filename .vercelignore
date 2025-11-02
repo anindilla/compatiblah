@@ -1,0 +1,8 @@
+backend/
+*.db
+*.sqlite
+*.log
+go.mod
+go.sum
+node_modules/
+
