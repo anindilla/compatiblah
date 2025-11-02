@@ -42,30 +42,22 @@ export async function getApiUrl() {
     return cachedApiUrl;
   }
 
-  // Auto-detect: if on Vercel, assume backend is on same domain with /api proxy
-  // OR if hostname is vercel, use a default backend URL pattern
+  // If we're in production (Vercel) and still no URL configured, show error
   const hostname = window.location.hostname;
+  const isProduction = hostname.includes('vercel.app') || hostname.includes('vercel.com');
   
-  if (hostname.includes('vercel.app') || hostname.includes('vercel.com')) {
-    // If deployed on Vercel but no backend URL set, we need to detect it
-    // For now, use a common pattern or prompt user
-    // Default to trying the same domain with /api prefix (if proxied)
-    const currentOrigin = window.location.origin;
+  if (isProduction && !hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
+    // Production but no backend URL configured
+    console.error('❌ Backend API URL not configured!');
+    console.error('📝 Please do ONE of the following:');
+    console.error('   1. Set VITE_API_URL in Vercel environment variables and redeploy');
+    console.error('   2. Edit frontend/public/config.json with your backend URL and commit');
+    console.error('   3. Set window.__API_URL__ in browser console (temporary fix)');
     
-    // Check if we're in production (not localhost)
-    if (!hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
-      // In production, we'll try to auto-detect
-      // For Railway deployments, we'll need to set this manually via config.json
-      // But let's provide a helpful error message
-      console.warn('⚠️ Backend API URL not configured. Please set it in /config.json or VITE_API_URL env var.');
-      // Don't fail completely, try a reasonable default
-      cachedApiUrl = currentOrigin.replace(/^https?:\/\//, '').replace(/\.vercel\.app.*/, '') + '.railway.app';
-      if (!cachedApiUrl.startsWith('http')) {
-        cachedApiUrl = 'https://' + cachedApiUrl;
-      }
-      console.warn('⚠️ Using auto-detected backend URL:', cachedApiUrl);
-      return cachedApiUrl;
-    }
+    // Don't use localhost in production - it will fail anyway
+    // Return empty string so fetch will fail with a clear error
+    cachedApiUrl = '';
+    return cachedApiUrl;
   }
 
   // Default: localhost for local development
