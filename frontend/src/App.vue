@@ -72,6 +72,7 @@
       </div>
     </div>
     <Footer />
+    <BackendConfig v-if="showBackendConfig" @configured="onBackendConfigured" />
   </div>
 </template>
 
@@ -80,17 +81,31 @@ import { ref, computed, onMounted } from 'vue'
 import PersonForm from './components/PersonForm.vue'
 import CompatibilityResults from './components/CompatibilityResults.vue'
 import Footer from './components/Footer.vue'
+import BackendConfig from './components/BackendConfig.vue'
 import { getApiUrl, getApiUrlSync } from './config.js'
 
 // Initialize with sync version, will be updated on mount
 const apiUrl = ref(getApiUrlSync())
+const showBackendConfig = ref(false)
 
 // Load actual API URL on mount (async)
 onMounted(async () => {
   const url = await getApiUrl()
   apiUrl.value = url
   console.log('✅ API URL configured:', url)
+  
+  // Show config if URL is invalid or localhost in production
+  const hostname = window.location.hostname
+  const isProduction = hostname.includes('vercel.app')
+  if ((!url || url.includes('localhost') || url.includes('YOUR-BACKEND')) && isProduction) {
+    showBackendConfig.value = true
+  }
 })
+
+function onBackendConfigured(url) {
+  apiUrl.value = url
+  showBackendConfig.value = false
+}
 const person1 = ref({
   name: '',
   mbti: '',

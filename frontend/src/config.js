@@ -10,14 +10,23 @@ export async function getApiUrl() {
   }
 
   // Priority order:
-  // 1. Window override (for manual testing)
-  // 2. Config file (runtime config)
-  // 3. Vite env var (build-time)
-  // 4. Auto-detect based on hostname
+  // 1. localStorage (user-set, persistent)
+  // 2. Window override (for manual testing)
+  // 3. Config file (runtime config)
+  // 4. Vite env var (build-time)
+  // 5. Auto-detect common patterns
+  
+  // Check localStorage first (persists across reloads)
+  const storedUrl = localStorage.getItem('backend_api_url');
+  if (storedUrl && storedUrl.trim() !== '' && !storedUrl.includes('localhost')) {
+    cachedApiUrl = storedUrl.trim();
+    return cachedApiUrl;
+  }
   
   const windowOverride = window.__API_URL__;
-  if (windowOverride) {
-    cachedApiUrl = windowOverride;
+  if (windowOverride && windowOverride.trim() !== '') {
+    cachedApiUrl = windowOverride.trim();
+    localStorage.setItem('backend_api_url', cachedApiUrl);
     return cachedApiUrl;
   }
 
@@ -26,8 +35,9 @@ export async function getApiUrl() {
     const response = await fetch('/config.json?' + Date.now());
     if (response.ok) {
       const config = await response.json();
-      if (config.apiUrl && config.apiUrl.trim() !== '') {
+      if (config.apiUrl && config.apiUrl.trim() !== '' && !config.apiUrl.includes('YOUR-BACKEND')) {
         cachedApiUrl = config.apiUrl.trim();
+        localStorage.setItem('backend_api_url', cachedApiUrl);
         return cachedApiUrl;
       }
     }
@@ -39,24 +49,28 @@ export async function getApiUrl() {
   const viteApiUrl = import.meta.env.VITE_API_URL;
   if (viteApiUrl && viteApiUrl.trim() !== '') {
     cachedApiUrl = viteApiUrl.trim();
+    localStorage.setItem('backend_api_url', cachedApiUrl);
     return cachedApiUrl;
   }
 
-  // If we're in production (Vercel) and still no URL configured, show error
+  // Auto-detect: Try common Railway URL patterns based on hostname
   const hostname = window.location.hostname;
   const isProduction = hostname.includes('vercel.app') || hostname.includes('vercel.com');
   
   if (isProduction && !hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
-    // Production but no backend URL configured
-    console.error('❌ Backend API URL not configured!');
-    console.error('📝 Please do ONE of the following:');
-    console.error('   1. Set VITE_API_URL in Vercel environment variables and redeploy');
-    console.error('   2. Edit frontend/public/config.json with your backend URL and commit');
-    console.error('   3. Set window.__API_URL__ in browser console (temporary fix)');
+    // Try common Railway patterns
+    const projectName = hostname.replace(/\.vercel\.app.*/, '').replace(/-/g, '');
+    const possibleUrls = [
+      `https://compatiblah-production.up.railway.app`,
+      `https://compatiblah.railway.app`,
+      `https://${projectName}-production.up.railway.app`,
+      `https://${projectName}.railway.app`,
+    ];
     
-    // Don't use localhost in production - it will fail anyway
-    // Return empty string so fetch will fail with a clear error
-    cachedApiUrl = '';
+    // Return first pattern (user will see config dialog if wrong)
+    cachedApiUrl = possibleUrls[0];
+    console.warn('⚠️ Using auto-detected backend URL:', cachedApiUrl);
+    console.warn('📝 If this is wrong, a configuration dialog will appear.');
     return cachedApiUrl;
   }
 
