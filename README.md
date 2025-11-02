@@ -79,7 +79,7 @@ The frontend is configured for Vercel deployment. Simply connect your GitHub rep
 
 ### Backend Deployment (Render - Free Tier)
 
-The backend is configured for Render's free tier deployment.
+The backend is deployed on Render's free tier. The Go backend handles sequential category generation for progressive results.
 
 #### Quick Deploy to Render
 
@@ -138,19 +138,41 @@ The repository includes `render.yaml` for automatic configuration:
 ```
 compatiblah/
 ├── backend/
-│   ├── db/           # Database operations
-│   ├── handlers/     # HTTP handlers
-│   ├── models/       # Data models
-│   ├── services/     # Business logic (Gemini API)
-│   └── main.go       # Entry point
+│   ├── db/              # Database operations (SQLite)
+│   ├── handlers/         # HTTP handlers (assessments, categories)
+│   ├── models/          # Data models (PersonData, Assessment, etc.)
+│   ├── services/        # Business logic (Gemini API integration)
+│   │   └── gemini.go    # Progressive category assessment
+│   └── main.go          # Entry point with CORS middleware
 ├── frontend/
 │   ├── src/
-│   │   ├── components/  # Vue components
-│   │   ├── App.vue      # Main app component
-│   │   └── main.js      # Entry point
-│   └── public/          # Static assets
-└── vercel.json       # Vercel configuration
+│   │   ├── components/
+│   │   │   ├── CompatibilityResults.vue  # Results with sticky header & collapsible sections
+│   │   │   ├── PersonForm.vue            # Input forms
+│   │   │   └── Footer.vue                # Footer component
+│   │   ├── App.vue                      # Main app with progressive API calls
+│   │   ├── config.js                    # Runtime API URL detection
+│   │   └── main.js                      # Entry point
+│   └── public/
+│       └── config.json                  # Runtime backend URL config
+├── render.yaml          # Render deployment blueprint
+└── vercel.json          # Vercel frontend configuration
 ```
+
+## 🔄 How It Works
+
+1. **User Input**: Enter names, MBTI types, optional social media, and additional parameters
+2. **Sequential Processing**: Frontend makes 3 sequential API calls to `/api/assess/category`:
+   - First: Friendship compatibility
+   - Second: Workplace compatibility  
+   - Third: Romance compatibility
+3. **Progressive Display**: Results appear as each category completes, showing loading states per category
+4. **Structured Output**: Each category returns:
+   - Score (1-5 stars)
+   - Explanation with 3+ sections
+   - Each section has 2-3 subcategories
+   - Each subcategory has 2-3 bullet points
+5. **Interactive UI**: Users can collapse/expand sections, mobile users see sticky category header
 
 ## 🎨 Features in Detail
 
