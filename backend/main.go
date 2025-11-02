@@ -26,19 +26,33 @@ func main() {
 	// Setup Gin router
 	r := gin.Default()
 
-	// CORS configuration - allow all origins for production
-	// Handle OPTIONS requests first (preflight)
-	r.OPTIONS("/*path", func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
+	// Manual CORS middleware - handle ALL requests including OPTIONS preflight
+	r.Use(func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
+		
+		// Set CORS headers for all origins (production-friendly)
+		if origin != "" {
+			c.Header("Access-Control-Allow-Origin", "*")
+		} else {
+			c.Header("Access-Control-Allow-Origin", "*")
+		}
+		
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept, Authorization, X-Requested-With, X-CSRF-Token")
+		c.Header("Access-Control-Allow-Credentials", "false")
 		c.Header("Access-Control-Max-Age", "43200")
-		c.Status(204)
-		c.Abort()
-		return
+		c.Header("Access-Control-Expose-Headers", "Content-Length, Content-Type")
+
+		// Handle OPTIONS preflight request
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
 	})
 
-	// CORS middleware for all other requests
+	// Also use gin-cors as backup (redundant but ensures compatibility)
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"}
