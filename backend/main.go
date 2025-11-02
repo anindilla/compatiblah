@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"compatiblah/backend/db"
@@ -41,6 +42,19 @@ func main() {
 			c.AbortWithStatus(204)
 			return
 		}
+
+		// Recover from panics and ensure CORS headers are still set
+		defer func() {
+			if err := recover(); err != nil {
+				// Ensure CORS headers are set even on panic
+				c.Header("Access-Control-Allow-Origin", "*")
+				c.JSON(500, gin.H{
+					"error": "Internal server error",
+					"message": fmt.Sprintf("%v", err),
+				})
+				c.Abort()
+			}
+		}()
 
 		c.Next()
 	})
