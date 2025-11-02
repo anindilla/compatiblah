@@ -1,9 +1,9 @@
 <template>
   <div v-if="results && (results.friend_score > 0 || results.coworker_score > 0 || results.partner_score > 0)" class="space-y-4 sm:space-y-6 md:space-y-8 animate-fadeIn">
-    <!-- Sticky Category Header -->
+    <!-- Sticky Category Header (Mobile Only) -->
     <div 
       v-if="activeCategory"
-      class="sticky top-0 z-50 bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 md:p-5 text-white border-2 border-orange-400/50 backdrop-blur-md mb-4 transition-all duration-300"
+      class="md:hidden sticky top-0 z-50 bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 text-white border-2 border-orange-400/50 backdrop-blur-md mb-4 transition-all duration-300"
       :class="activeCategory ? 'opacity-100' : 'opacity-0'"
     >
       <div class="flex items-center justify-between">
@@ -434,9 +434,25 @@ let observer = null
 
 onMounted(() => {
   if (typeof IntersectionObserver === 'undefined') return
+  
+  // Only enable sticky header on mobile (screen width < 768px)
+  const checkMobile = () => {
+    return window.innerWidth < 768
+  }
+  
+  // Only set up observer on mobile
+  if (!checkMobile()) {
+    return
+  }
 
   observer = new IntersectionObserver(
     (entries) => {
+      // Only update if still on mobile
+      if (!checkMobile()) {
+        activeCategory.value = null
+        return
+      }
+      
       // Find the entry with highest intersection ratio
       let maxRatio = 0
       let visibleCategory = null
@@ -474,6 +490,24 @@ onMounted(() => {
   if (coworkerCard.value) observer.observe(coworkerCard.value)
   if (partnerCard.value) observer.observe(partnerCard.value)
   if (overallHeader.value) observer.observe(overallHeader.value)
+  
+  // Clear sticky header on resize to desktop
+  const handleResize = () => {
+    if (!checkMobile()) {
+      activeCategory.value = null
+      if (observer) {
+        observer.disconnect()
+        observer = null
+      }
+    }
+  }
+  
+  window.addEventListener('resize', handleResize)
+  
+  // Cleanup on unmount
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+  })
 })
 
 onUnmounted(() => {
