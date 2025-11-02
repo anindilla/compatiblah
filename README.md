@@ -6,9 +6,12 @@ A compatibility assessment web application that analyzes compatibility between t
 
 - **AI-Powered Analysis**: Uses Google Gemini AI to provide comprehensive compatibility assessments
 - **Three Contexts**: Evaluates compatibility as friends, coworkers, and partners
-- **Structured Results**: Detailed analysis with bullet points and subcategories
+- **Progressive Generation**: Results appear progressively as each category is analyzed (friend → coworker → partner)
+- **Structured Results**: Detailed analysis with sections, subcategories, and 2-3 concise bullet points each
+- **Collapsible Sections**: Expandable/collapsible sections for better content organization
+- **Sticky Navigation**: Mobile-only sticky category header that updates as you scroll
 - **Privacy-First**: Only stores assessment results, no personal data
-- **Responsive Design**: Beautiful orange-themed UI that works on all devices
+- **Responsive Design**: Beautiful orange-themed UI optimized for desktop and mobile
 - **Modern Stack**: Vue.js 3 + Go backend
 
 ## 📋 Tech Stack
@@ -123,11 +126,12 @@ The repository includes `render.yaml` for automatic configuration:
 ## 🔐 Environment Variables
 
 ### Frontend (Vercel)
-- `VITE_API_URL`: Backend API URL (e.g., `https://your-backend.railway.app`)
+- `VITE_API_URL`: Backend API URL (optional, auto-detects Render URLs)
 
-### Backend
-- `GEMINI_API_KEY`: Your Google Gemini API key
-- `PORT`: Server port (default: 8080)
+### Backend (Render)
+- `GEMINI_API_KEY`: Your Google Gemini API key (required)
+- `PORT`: Server port (automatically set by Render)
+- `CORS_ORIGINS`: Not needed (uses AllowAllOrigins)
 
 ## 📁 Project Structure
 
@@ -151,10 +155,19 @@ compatiblah/
 ## 🎨 Features in Detail
 
 - **MBTI Compatibility**: Analyzes personality types for compatibility
-- **Social Media Integration**: Optional social media profile analysis
-- **Additional Parameters**: Support for zodiac signs, DISC, and custom parameters
-- **Detailed Explanations**: Structured analysis with subcategories and bullet points
+- **Social Media Integration**: Optional social media profile analysis (only used if accessible)
+- **Additional Parameters**: Support for zodiac signs, DISC, Enneagram, and custom parameters
+- **Progressive Loading**: Categories are generated sequentially, showing results as they complete
+- **Structured Explanations**: 
+  - 3+ sections per category
+  - 2-3 subcategories per section
+  - 2-3 detailed bullet points per subcategory
+- **Interactive UI**:
+  - Collapsible sections (all expanded by default)
+  - Mobile sticky header showing current category
+  - Smooth animations and transitions
 - **Star Ratings**: Visual 5-star rating system for each compatibility context
+- **Overall Score**: Calculated dynamically as categories complete
 
 ## 🤝 Contributing
 
