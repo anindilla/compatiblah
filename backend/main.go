@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
 	"compatiblah/backend/db"
 	"compatiblah/backend/handlers"
 	"github.com/gin-contrib/cors"
