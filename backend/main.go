@@ -28,15 +28,8 @@ func main() {
 
 	// Manual CORS middleware - handle ALL requests including OPTIONS preflight
 	r.Use(func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
-		
 		// Set CORS headers for all origins (production-friendly)
-		if origin != "" {
-			c.Header("Access-Control-Allow-Origin", "*")
-		} else {
-			c.Header("Access-Control-Allow-Origin", "*")
-		}
-		
+		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept, Authorization, X-Requested-With, X-CSRF-Token")
 		c.Header("Access-Control-Allow-Credentials", "false")
