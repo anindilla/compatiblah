@@ -80,8 +80,9 @@ import { ref, computed } from 'vue'
 import PersonForm from './components/PersonForm.vue'
 import CompatibilityResults from './components/CompatibilityResults.vue'
 import Footer from './components/Footer.vue'
+import { getApiUrl } from './config.js'
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const apiUrl = getApiUrl()
 const person1 = ref({
   name: '',
   mbti: '',
