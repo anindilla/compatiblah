@@ -76,13 +76,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import PersonForm from './components/PersonForm.vue'
 import CompatibilityResults from './components/CompatibilityResults.vue'
 import Footer from './components/Footer.vue'
-import { getApiUrl } from './config.js'
+import { getApiUrl, getApiUrlSync } from './config.js'
 
-const apiUrl = getApiUrl()
+// Initialize with sync version, will be updated on mount
+const apiUrl = ref(getApiUrlSync())
+
+// Load actual API URL on mount (async)
+onMounted(async () => {
+  const url = await getApiUrl()
+  apiUrl.value = url
+  console.log('✅ API URL configured:', url)
+})
 const person1 = ref({
   name: '',
   mbti: '',
@@ -137,8 +145,8 @@ async function submitAssessment() {
   results.value = null
   assessmentId.value = null
 
-  try {
-    const response = await fetch(`${apiUrl}/api/assess`, {
+          try {
+            const response = await fetch(`${apiUrl.value}/api/assess`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
