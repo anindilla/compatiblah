@@ -2,13 +2,13 @@ package services
 
 import (
 	"bytes"
+	"compatiblah/backend/models"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"strings"
-	"compatiblah/backend/models"
 )
 
 func AssessCompatibility(person1, person2 models.PersonData) (*models.GeminiResponse, error) {
@@ -91,16 +91,16 @@ func AssessCompatibility(person1, person2 models.PersonData) (*models.GeminiResp
 	// Try to parse as new structured format first
 	var result models.GeminiResponse
 	err = json.Unmarshal([]byte(jsonText), &result)
-	
+
 	// If parsing fails, try old format (backward compatibility)
 	if err != nil {
 		// Try intermediate format with sections but content field (intermediate format)
 		var intermediateFormat struct {
-			FriendScore         int `json:"friend_score"`
-			CoworkerScore       int `json:"coworker_score"`
-			PartnerScore        int `json:"partner_score"`
-			OverallScore        int `json:"overall_score"`
-			FriendExplanation   struct {
+			FriendScore       int `json:"friend_score"`
+			CoworkerScore     int `json:"coworker_score"`
+			PartnerScore      int `json:"partner_score"`
+			OverallScore      int `json:"overall_score"`
+			FriendExplanation struct {
 				Sections []struct {
 					Heading string `json:"heading"`
 					Content string `json:"content"`
@@ -119,18 +119,18 @@ func AssessCompatibility(person1, person2 models.PersonData) (*models.GeminiResp
 				} `json:"sections"`
 			} `json:"partner_explanation"`
 		}
-		
+
 		// Clean up JSON one more time before trying old format
 		jsonText = cleanJSONForParsing(jsonText)
-		
+
 		if oldErr := json.Unmarshal([]byte(jsonText), &intermediateFormat); oldErr == nil {
 			// Convert intermediate format (sections with content) to new format
 			result = models.GeminiResponse{
-				FriendScore:   intermediateFormat.FriendScore,
-				CoworkerScore: intermediateFormat.CoworkerScore,
-				PartnerScore:  intermediateFormat.PartnerScore,
-				OverallScore:  intermediateFormat.OverallScore,
-				FriendExplanation: convertSectionsToSubcategories(intermediateFormat.FriendExplanation.Sections, "friendship"),
+				FriendScore:         intermediateFormat.FriendScore,
+				CoworkerScore:       intermediateFormat.CoworkerScore,
+				PartnerScore:        intermediateFormat.PartnerScore,
+				OverallScore:        intermediateFormat.OverallScore,
+				FriendExplanation:   convertSectionsToSubcategories(intermediateFormat.FriendExplanation.Sections, "friendship"),
 				CoworkerExplanation: convertSectionsToSubcategories(intermediateFormat.CoworkerExplanation.Sections, "workplace"),
 				PartnerExplanation:  convertSectionsToSubcategories(intermediateFormat.PartnerExplanation.Sections, "romance"),
 			}
@@ -145,7 +145,7 @@ func AssessCompatibility(person1, person2 models.PersonData) (*models.GeminiResp
 				CoworkerExplanation string `json:"coworker_explanation"`
 				PartnerExplanation  string `json:"partner_explanation"`
 			}
-			
+
 			if stringErr := json.Unmarshal([]byte(jsonText), &stringFormat); stringErr == nil {
 				result = models.GeminiResponse{
 					FriendScore:         stringFormat.FriendScore,
@@ -184,7 +184,7 @@ func AssessCompatibility(person1, person2 models.PersonData) (*models.GeminiResp
 
 // CategoryResponse represents a single category assessment result
 type CategoryResponse struct {
-	Score       int                    `json:"score"`
+	Score       int                        `json:"score"`
 	Explanation models.CategoryExplanation `json:"explanation"`
 }
 
@@ -269,22 +269,22 @@ func AssessCategoryCompatibility(person1, person2 models.PersonData, category st
 
 	// Try to parse as structured format
 	var result struct {
-		Score       int                            `json:"score"`
+		Score       int                        `json:"score"`
 		Explanation models.CategoryExplanation `json:"explanation"`
 	}
-	
+
 	err = json.Unmarshal([]byte(jsonText), &result)
-	
+
 	// If parsing fails, try old format
 	if err != nil {
 		var oldFormat struct {
 			Score       int    `json:"score"`
 			Explanation string `json:"explanation"`
 		}
-		
+
 		if oldErr := json.Unmarshal([]byte(jsonText), &oldFormat); oldErr == nil {
 			result = struct {
-				Score       int                            `json:"score"`
+				Score       int                        `json:"score"`
 				Explanation models.CategoryExplanation `json:"explanation"`
 			}{
 				Score:       oldFormat.Score,
@@ -560,7 +560,7 @@ Return ONLY the raw JSON object, nothing else.`
 // buildCategoryPrompt generates a prompt for a single compatibility category
 func buildCategoryPrompt(person1, person2 models.PersonData, category string) string {
 	categoryContext := ""
-	
+
 	switch category {
 	case "friend":
 		categoryContext = "as friends"
@@ -782,7 +782,7 @@ func extractJSON(text string) string {
 
 	// Fix common JSON issues: trailing commas before closing braces/brackets
 	// Use regex-like approach to remove trailing commas more comprehensively
-	
+
 	// Remove trailing comma before } (handle various whitespace patterns)
 	jsonText = strings.ReplaceAll(jsonText, ",}", "}")
 	jsonText = strings.ReplaceAll(jsonText, ", }", " }")
@@ -792,7 +792,7 @@ func extractJSON(text string) string {
 	// Handle cases with spaces before comma
 	jsonText = strings.ReplaceAll(jsonText, " ,}", "}")
 	jsonText = strings.ReplaceAll(jsonText, " , }", " }")
-	
+
 	// Remove trailing comma before ] (handle various whitespace patterns)
 	jsonText = strings.ReplaceAll(jsonText, ",]", "]")
 	jsonText = strings.ReplaceAll(jsonText, ", ]", " ]")
@@ -802,35 +802,35 @@ func extractJSON(text string) string {
 	// Handle cases with spaces before comma
 	jsonText = strings.ReplaceAll(jsonText, " ,]", "]")
 	jsonText = strings.ReplaceAll(jsonText, " , ]", " ]")
-	
+
 	// More aggressive: remove trailing comma after last quote before closing brace
 	// This handles cases like: "value",\n}
 	jsonBytes := []byte(jsonText)
 	result := []byte{}
 	inString := false
 	escapeNext := false
-	
+
 	for i := 0; i < len(jsonBytes); i++ {
 		char := jsonBytes[i]
-		
+
 		if escapeNext {
 			result = append(result, char)
 			escapeNext = false
 			continue
 		}
-		
+
 		if char == '\\' {
 			escapeNext = true
 			result = append(result, char)
 			continue
 		}
-		
+
 		if char == '"' {
 			inString = !inString
 			result = append(result, char)
 			continue
 		}
-		
+
 		// If we're outside a string and find ",}" or ",\n}" or similar, skip the comma
 		if !inString && char == ',' {
 			// Look ahead to see if next non-whitespace is } or ]
@@ -857,7 +857,7 @@ func extractJSON(text string) string {
 			result = append(result, char)
 		}
 	}
-	
+
 	return string(result)
 }
 
@@ -865,26 +865,26 @@ func extractJSON(text string) string {
 func cleanJSONForParsing(jsonText string) string {
 	// Apply multiple cleaning passes
 	cleaned := jsonText
-	
+
 	// Remove trailing commas more aggressively
 	// Pattern: "value",\n} -> "value"\n}
 	cleaned = strings.ReplaceAll(cleaned, "\",\n}", "\"\n}")
 	cleaned = strings.ReplaceAll(cleaned, "\",\r\n}", "\"\r\n}")
 	cleaned = strings.ReplaceAll(cleaned, "\", }", "\" }")
 	cleaned = strings.ReplaceAll(cleaned, "\",}", "\"}")
-	
+
 	// Remove trailing commas after numbers
 	cleaned = strings.ReplaceAll(cleaned, ",\n}", "\n}")
 	cleaned = strings.ReplaceAll(cleaned, ",\r\n}", "\r\n}")
 	cleaned = strings.ReplaceAll(cleaned, ", }", " }")
 	cleaned = strings.ReplaceAll(cleaned, ",}", "}")
-	
+
 	// Remove trailing commas before closing bracket
 	cleaned = strings.ReplaceAll(cleaned, ",\n]", "\n]")
 	cleaned = strings.ReplaceAll(cleaned, ",\r\n]", "\r\n]")
 	cleaned = strings.ReplaceAll(cleaned, ", ]", " ]")
 	cleaned = strings.ReplaceAll(cleaned, ",]", "]")
-	
+
 	return cleaned
 }
 
@@ -892,10 +892,10 @@ func cleanJSONForParsing(jsonText string) string {
 func convertStringToStructured(text string, category string) models.CategoryExplanation {
 	sections := []models.ExplanationSection{}
 	headings := getHeadingsForCategory(category)
-	
+
 	// Split text into paragraphs
 	paragraphs := splitIntoParagraphs(text)
-	
+
 	if len(paragraphs) >= 3 {
 		// Use paragraphs as sections, convert each to subcategories with bullets
 		for i := 0; i < 3 && i < len(headings); i++ {
@@ -910,14 +910,14 @@ func convertStringToStructured(text string, category string) models.CategoryExpl
 		// Fewer paragraphs - split content into 3 sections with subcategories
 		words := splitIntoWords(text)
 		wordsPerSection := len(words) / 3
-		
+
 		for i := 0; i < 3 && i < len(headings); i++ {
 			start := i * wordsPerSection
 			end := start + wordsPerSection
 			if i == 2 {
 				end = len(words)
 			}
-			
+
 			if start < len(words) {
 				sectionText := strings.Join(words[start:end], " ")
 				subcategories := convertParagraphToSubcategories(sectionText, category, i)
@@ -935,7 +935,7 @@ func convertStringToStructured(text string, category string) models.CategoryExpl
 			Subcategories: subcategories,
 		})
 	}
-	
+
 	// Ensure at least 3 sections
 	if len(sections) < 3 {
 		for len(sections) < 3 {
@@ -958,17 +958,17 @@ func convertStringToStructured(text string, category string) models.CategoryExpl
 			}
 		}
 	}
-	
+
 	return models.CategoryExplanation{Sections: sections}
 }
 
 // convertParagraphToSubcategories converts a paragraph into subcategories with bullet points
 func convertParagraphToSubcategories(text string, category string, sectionIndex int) []models.SubCategory {
 	subcategories := []models.SubCategory{}
-	
+
 	// Split paragraph into sentences
 	sentences := splitIntoSentences(text)
-	
+
 	if len(sentences) >= 4 {
 		// Enough sentences - create 2-3 subcategories with 2-3 bullets each
 		subcatTitles := getSubcategoryTitles(category, sectionIndex)
@@ -976,14 +976,14 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 		if sentencesPerSubcat < 2 {
 			sentencesPerSubcat = 2
 		}
-		
+
 		for i, title := range subcatTitles {
 			start := i * sentencesPerSubcat
 			end := start + sentencesPerSubcat
 			if i == len(subcatTitles)-1 {
 				end = len(sentences)
 			}
-			
+
 			if start < len(sentences) {
 				bullets := []models.BulletPoint{}
 				for _, sent := range sentences[start:end] {
@@ -991,7 +991,7 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 						bullets = append(bullets, models.BulletPoint{Text: strings.TrimSpace(sent)})
 					}
 				}
-				
+
 				// Group bullets into 2-3 per subcategory
 				if len(bullets) > 3 {
 					grouped := []models.BulletPoint{}
@@ -1011,7 +1011,7 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 					}
 					bullets = grouped
 				}
-				
+
 				if len(bullets) > 0 {
 					subcategories = append(subcategories, models.SubCategory{
 						Title:   title,
@@ -1029,7 +1029,7 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 				bullets = append(bullets, models.BulletPoint{Text: sent})
 			}
 		}
-		
+
 		// Split into groups of 2-3 bullets
 		if len(bullets) > 3 {
 			grouped := []models.BulletPoint{}
@@ -1049,7 +1049,7 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 			}
 			bullets = grouped
 		}
-		
+
 		if len(bullets) > 0 {
 			subcategories = append(subcategories, models.SubCategory{
 				Title:   getDefaultSubcategoryTitle(category, sectionIndex),
@@ -1057,7 +1057,7 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 			})
 		}
 	}
-	
+
 	// Ensure at least one subcategory
 	if len(subcategories) == 0 {
 		subcategories = append(subcategories, models.SubCategory{
@@ -1067,19 +1067,19 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 			},
 		})
 	}
-	
+
 	return subcategories
 }
 
 func splitIntoSentences(text string) []string {
 	// Split by periods, exclamation, question marks followed by space
 	sentences := []string{}
-	
+
 	// Replace common sentence endings
 	text = strings.ReplaceAll(text, ". ", ".<SPLIT>")
 	text = strings.ReplaceAll(text, "! ", "!<SPLIT>")
 	text = strings.ReplaceAll(text, "? ", "?<SPLIT>")
-	
+
 	parts := strings.Split(text, "<SPLIT>")
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
@@ -1091,7 +1091,7 @@ func splitIntoSentences(text string) []string {
 			sentences = append(sentences, part)
 		}
 	}
-	
+
 	return sentences
 }
 
@@ -1113,13 +1113,13 @@ func getSubcategoryTitles(category string, sectionIndex int) []string {
 			2: {"Long-term Potential", "Growth Together"},
 		},
 	}
-	
+
 	if catMap, ok := titles[category]; ok {
 		if sectionTitles, ok := catMap[sectionIndex]; ok {
 			return sectionTitles
 		}
 	}
-	
+
 	// Default titles
 	return []string{"Strengths", "Challenges", "Growth Opportunities"}
 }
@@ -1135,7 +1135,7 @@ func getDefaultSubcategoryTitle(category string, sectionIndex int) string {
 func splitIntoParagraphs(text string) []string {
 	// Split by double newlines or periods followed by newlines
 	paragraphs := []string{}
-	
+
 	// First, try splitting by \n\n
 	parts := strings.Split(text, "\n\n")
 	for _, part := range parts {
@@ -1144,7 +1144,7 @@ func splitIntoParagraphs(text string) []string {
 			paragraphs = append(paragraphs, trimmed)
 		}
 	}
-	
+
 	// If no double newlines, try splitting by periods + newline
 	if len(paragraphs) <= 1 {
 		paragraphs = []string{}
@@ -1159,7 +1159,7 @@ func splitIntoParagraphs(text string) []string {
 			}
 		}
 	}
-	
+
 	// If still only one, split by sentences (period + space)
 	if len(paragraphs) <= 1 {
 		paragraphs = []string{}
@@ -1175,7 +1175,7 @@ func splitIntoParagraphs(text string) []string {
 				if !strings.HasSuffix(sent, ".") {
 					currentPara += "."
 				}
-				
+
 				// Group 2-3 sentences per paragraph
 				if (i+1)%2 == 0 || i == len(sentences)-1 {
 					paragraphs = append(paragraphs, currentPara)
@@ -1187,7 +1187,7 @@ func splitIntoParagraphs(text string) []string {
 			paragraphs = append(paragraphs, currentPara)
 		}
 	}
-	
+
 	return paragraphs
 }
 
@@ -1201,7 +1201,7 @@ func convertSectionsToSubcategories(oldSections []struct {
 	Content string `json:"content"`
 }, category string) models.CategoryExplanation {
 	sections := []models.ExplanationSection{}
-	
+
 	for i, oldSection := range oldSections {
 		subcategories := convertParagraphToSubcategories(oldSection.Content, category, i)
 		sections = append(sections, models.ExplanationSection{
@@ -1209,7 +1209,7 @@ func convertSectionsToSubcategories(oldSections []struct {
 			Subcategories: subcategories,
 		})
 	}
-	
+
 	// Ensure at least 3 sections
 	if len(sections) < 3 {
 		headings := getHeadingsForCategory(category)
@@ -1233,7 +1233,7 @@ func convertSectionsToSubcategories(oldSections []struct {
 			}
 		}
 	}
-	
+
 	return models.CategoryExplanation{Sections: sections}
 }
 
@@ -1265,4 +1265,3 @@ func getHeadingsForCategory(category string) []string {
 		}
 	}
 }
-
