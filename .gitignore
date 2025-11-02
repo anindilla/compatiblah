@@ -39,3 +39,7 @@ lerna-debug.log*
 *.db
 *.sqlite
 *.sqlite3
+
+# Build artifacts
+app
+/tmp/
