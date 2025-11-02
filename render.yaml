@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: compatiblah-backend
+    env: go
+    plan: free
+    buildCommand: cd backend && go mod download && go build -o app
+    startCommand: cd backend && ./app
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGINS
+        value: "*"
+

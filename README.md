@@ -74,30 +74,51 @@ The frontend is configured for Vercel deployment. Simply connect your GitHub rep
 
 **Important**: You'll need to set the `VITE_API_URL` environment variable in Vercel pointing to your backend API.
 
-### Backend Deployment Options
+### Backend Deployment (Render - Free Tier)
 
-The backend needs to be deployed separately. Options include:
+The backend is configured for Render's free tier deployment.
 
-1. **Railway** (Recommended)
-   - Connect your GitHub repo
-   - Set `GEMINI_API_KEY` environment variable
-   - Deploy the `backend` folder
+#### Quick Deploy to Render
 
-2. **Render**
-   - Create a new Web Service
-   - Point to the `backend` folder
-   - Set environment variables
+1. **Create Render Account**
+   - Go to https://render.com and sign up with GitHub
 
-3. **Fly.io**
-   - Install Fly CLI
-   - Run `fly launch` in the backend directory
-   - Set secrets: `fly secrets set GEMINI_API_KEY=your_key`
+2. **Deploy Backend**
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository
+   - Configure:
+     - **Root Directory**: `backend`
+     - **Build Command**: `go mod download && go build -o app`
+     - **Start Command**: `./app`
+     - **Health Check Path**: `/health`
+     - **Plan**: Free
+   - Add environment variable: `GEMINI_API_KEY` = your API key
+   - Deploy!
 
-4. **Heroku**
-   - Create Procfile in backend: `web: go run main.go`
-   - Set config vars: `GEMINI_API_KEY`
+3. **Get Backend URL**
+   - After deployment, copy your service URL (e.g., `https://compatiblah-backend.onrender.com`)
 
-**After deploying the backend**, update the `VITE_API_URL` in your Vercel project settings to point to your backend URL.
+4. **Configure Frontend**
+   - Option A: Set `VITE_API_URL` in Vercel environment variables to your Render URL
+   - Option B: Let the app auto-detect (it tries Render patterns automatically)
+   - Redeploy frontend
+
+**Detailed instructions**: See [DEPLOY_RENDER.md](./DEPLOY_RENDER.md)
+
+#### Alternative: Using render.yaml (Blueprint)
+
+The repository includes `render.yaml` for automatic configuration:
+1. In Render → "New +" → "Blueprint"
+2. Connect your GitHub repo
+3. Render auto-configures from `render.yaml`
+4. Set `GEMINI_API_KEY` environment variable
+5. Deploy!
+
+#### Free Tier Notes
+
+- Service is free forever
+- Spins down after 15 minutes of inactivity (cold start ~30-60s)
+- SQLite database works but may reset on service restart (acceptable for demo/personal projects)
 
 ## 🔐 Environment Variables
 

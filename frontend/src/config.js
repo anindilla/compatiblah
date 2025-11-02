@@ -53,18 +53,18 @@ export async function getApiUrl() {
     return cachedApiUrl;
   }
 
-  // Auto-detect: Try common Railway URL patterns based on hostname
+  // Auto-detect: Try common Render URL patterns based on hostname
   const hostname = window.location.hostname;
   const isProduction = hostname.includes('vercel.app') || hostname.includes('vercel.com');
   
   if (isProduction && !hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
-    // Try common Railway patterns
-    const projectName = hostname.replace(/\.vercel\.app.*/, '').replace(/-/g, '');
+    // Try common Render patterns (Render is the deployment target)
+    const projectName = hostname.replace(/\.vercel\.app.*/, '');
     const possibleUrls = [
-      `https://compatiblah-production.up.railway.app`,
-      `https://compatiblah.railway.app`,
-      `https://${projectName}-production.up.railway.app`,
-      `https://${projectName}.railway.app`,
+      `https://compatiblah-backend.onrender.com`,
+      `https://compatiblah.onrender.com`,
+      `https://${projectName}-backend.onrender.com`,
+      `https://${projectName}.onrender.com`,
     ];
     
     // Return first pattern (user will see config dialog if wrong)

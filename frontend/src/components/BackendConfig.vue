@@ -5,12 +5,12 @@
         ⚙️ Backend Configuration
       </h2>
       <p class="text-gray-700 dark:text-gray-300 mb-4">
-        Enter your backend API URL (from Railway):
+        Enter your backend API URL (from Render):
       </p>
       <input
         v-model="backendUrl"
         type="text"
-        placeholder="https://your-app.railway.app"
+        placeholder="https://compatiblah-backend.onrender.com"
         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:text-white mb-4"
         @keyup.enter="saveConfig"
       />
@@ -61,22 +61,21 @@ function saveConfig() {
 }
 
 async function tryAutoDetect() {
-  // Try common Railway URL patterns
+  // Try common Render URL patterns
   const hostname = window.location.hostname
-  const projectName = hostname.replace(/\.vercel\.app.*/, '').replace(/-/g, '')
+  const projectName = hostname.replace(/\.vercel\.app.*/, '')
   
   const patterns = [
-    `https://${projectName}.railway.app`,
-    `https://${projectName}-production.up.railway.app`,
-    `https://${projectName}-backend.up.railway.app`,
-    `https://compatiblah-production.up.railway.app`,
-    `https://compatiblah.railway.app`,
+    `https://compatiblah-backend.onrender.com`,
+    `https://compatiblah.onrender.com`,
+    `https://${projectName}-backend.onrender.com`,
+    `https://${projectName}.onrender.com`,
   ]
   
   // Try each pattern
   for (const url of patterns) {
     try {
-      const response = await fetch(`${url}/health`, { method: 'GET', signal: AbortSignal.timeout(2000) })
+      const response = await fetch(`${url}/health`, { method: 'GET', signal: AbortSignal.timeout(5000) })
       if (response.ok) {
         backendUrl.value = url
         saveConfig()
@@ -87,7 +86,7 @@ async function tryAutoDetect() {
     }
   }
   
-  alert('Could not auto-detect backend URL. Please enter it manually.')
+  alert('Could not auto-detect backend URL. Please enter your Render backend URL manually (e.g., https://compatiblah-backend.onrender.com)')
 }
 </script>
 
