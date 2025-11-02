@@ -379,7 +379,7 @@ CRITICAL INSTRUCTIONS:
 For each compatibility context (friendship, workplace, romance), provide a structured analysis with AT LEAST 3 distinct sections. Each section should have:
 - A clear heading
 - 2-3 sub-categories with descriptive titles
-- Each sub-category should contain 3-5 bullet points (detailed, not just one word)
+- Each sub-category should contain 2-3 bullet points (detailed, not just one word)
 
 Use a mix of consistent labels (like "Strengths", "Challenges") and context-specific labels (like "What Draws Them Together" for romance, "Communication Styles" for friendship, "Collaboration Tips" for workplace) where it makes sense.
 
@@ -397,9 +397,8 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title, e.g., 'Communication Styles' or 'Strengths'>",
             "bullets": [
-              {"text": "<Detailed bullet point (3-5 sentences worth of information per bullet). Reference specific MBTI traits, social media insights, or additional parameters.>"},
-              {"text": "<Another detailed bullet point.>"},
-              {"text": "<Third detailed bullet point (3-5 bullets total per sub-category).>"}
+              {"text": "<Detailed bullet point (2-3 sentences worth of information per bullet). Reference specific MBTI traits, social media insights, or additional parameters.>"},
+              {"text": "<Another detailed bullet point (2-3 bullets total per sub-category).>"}
             ]
           },
           {
@@ -426,7 +425,7 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title, e.g., 'What Makes Them Great Together'>",
             "bullets": [
-              {"text": "<3-5 detailed bullets describing complementary traits, shared values, etc.>"}
+              {"text": "<2-3 detailed bullets describing complementary traits, shared values, etc.>"}
             ]
           }
         ]
@@ -437,7 +436,7 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           }
         ]
@@ -458,13 +457,13 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category 2 title, e.g., 'Potential Friction Points' or 'Challenges'>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           },
           {
             "title": "<Sub-category 3 title, e.g., 'Collaboration Tips' or 'Professional Growth'>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           }
         ]
@@ -475,7 +474,7 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           }
         ]
@@ -486,7 +485,7 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           }
         ]
@@ -507,13 +506,13 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category 2 title, e.g., 'Communication Needs' (context-specific)>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           },
           {
             "title": "<Sub-category 3 title, e.g., 'Success Strategies' (context-specific)>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           }
         ]
@@ -524,7 +523,7 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           }
         ]
@@ -535,7 +534,7 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           }
         ]
@@ -677,7 +676,7 @@ CRITICAL INSTRUCTIONS:
 Provide a structured analysis with AT LEAST 3 distinct sections. Each section should have:
 - A clear heading
 - 2-3 sub-categories with descriptive titles
-- Each sub-category should contain 3-5 bullet points (detailed, not just one word)
+- Each sub-category should contain 2-3 bullet points (detailed, not just one word)
 
 Return your response as a JSON object with the following EXACT structure (no markdown, no code blocks):
 {
@@ -690,9 +689,8 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title, e.g., 'Communication Styles' or 'Strengths'>",
             "bullets": [
-              {"text": "<Detailed bullet point (3-5 sentences worth of information per bullet). Reference specific MBTI traits, social media insights, or additional parameters.>"},
-              {"text": "<Another detailed bullet point.>"},
-              {"text": "<Third detailed bullet point (3-5 bullets total per sub-category).>"}
+              {"text": "<Detailed bullet point (2-3 sentences worth of information per bullet). Reference specific MBTI traits, social media insights, or additional parameters.>"},
+              {"text": "<Another detailed bullet point (2-3 bullets total per sub-category).>"}
             ]
           },
           {
@@ -719,7 +717,7 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title, e.g., 'What Makes Them Great Together'>",
             "bullets": [
-              {"text": "<3-5 detailed bullets describing complementary traits, shared values, etc.>"}
+              {"text": "<2-3 detailed bullets describing complementary traits, shared values, etc.>"}
             ]
           }
         ]
@@ -730,7 +728,7 @@ Return your response as a JSON object with the following EXACT structure (no mar
           {
             "title": "<Sub-category title>",
             "bullets": [
-              {"text": "<3-5 detailed bullets>"}
+              {"text": "<2-3 detailed bullets>"}
             ]
           }
         ]
@@ -971,12 +969,12 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 	// Split paragraph into sentences
 	sentences := splitIntoSentences(text)
 	
-	if len(sentences) >= 6 {
-		// Enough sentences - create 2-3 subcategories with 3-5 bullets each
+	if len(sentences) >= 4 {
+		// Enough sentences - create 2-3 subcategories with 2-3 bullets each
 		subcatTitles := getSubcategoryTitles(category, sectionIndex)
 		sentencesPerSubcat := len(sentences) / len(subcatTitles)
-		if sentencesPerSubcat < 3 {
-			sentencesPerSubcat = 3
+		if sentencesPerSubcat < 2 {
+			sentencesPerSubcat = 2
 		}
 		
 		for i, title := range subcatTitles {
@@ -994,10 +992,10 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 					}
 				}
 				
-				// Group bullets into 3-5 per subcategory
-				if len(bullets) > 5 {
+				// Group bullets into 2-3 per subcategory
+				if len(bullets) > 3 {
 					grouped := []models.BulletPoint{}
-					for i := 0; i < len(bullets); i += 3 {
+					for i := 0; i < len(bullets); i += 2 {
 						endIdx := i + 3
 						if endIdx > len(bullets) {
 							endIdx = len(bullets)
@@ -1032,10 +1030,10 @@ func convertParagraphToSubcategories(text string, category string, sectionIndex 
 			}
 		}
 		
-		// Split into groups of 3-5 bullets
-		if len(bullets) > 5 {
+		// Split into groups of 2-3 bullets
+		if len(bullets) > 3 {
 			grouped := []models.BulletPoint{}
-			for i := 0; i < len(bullets); i += 3 {
+			for i := 0; i < len(bullets); i += 2 {
 				end := i + 3
 				if end > len(bullets) {
 					end = len(bullets)

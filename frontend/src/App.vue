@@ -225,9 +225,9 @@ async function submitAssessment() {
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0)
     const bullets = sentences.map(s => ({ text: s.trim() + (s.trim().match(/[.!?]$/) ? '' : '.') }))
     
-    // Group bullets into subcategories (3-5 bullets each)
+    // Group bullets into subcategories (2-3 bullets each)
     const subcategories = []
-    const bulletsPerSubcat = 4
+    const bulletsPerSubcat = 2
     
     for (let i = 0; i < bullets.length; i += bulletsPerSubcat) {
       const subcatBullets = bullets.slice(i, i + bulletsPerSubcat)
