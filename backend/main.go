@@ -64,6 +64,20 @@ func main() {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
+	// Root endpoint - helpful message
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Compatiblah API",
+			"version": "1.0.0",
+			"endpoints": gin.H{
+				"health": "/health",
+				"assess": "POST /api/assess",
+				"get_assessment": "GET /api/assessment/:id",
+				"get_all": "GET /api/assessments",
+			},
+		})
+	})
+
 	// Start server
 	port := os.Getenv("PORT")
 	if port == "" {
