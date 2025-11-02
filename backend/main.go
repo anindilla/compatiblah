@@ -27,6 +27,18 @@ func main() {
 	r := gin.Default()
 
 	// CORS configuration - allow all origins for production
+	// Handle OPTIONS requests first (preflight)
+	r.OPTIONS("/*path", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept, Authorization, X-Requested-With, X-CSRF-Token")
+		c.Header("Access-Control-Max-Age", "43200")
+		c.Status(204)
+		c.Abort()
+		return
+	})
+
+	// CORS middleware for all other requests
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"}
@@ -38,9 +50,6 @@ func main() {
 		"Authorization",
 		"X-Requested-With",
 		"X-CSRF-Token",
-		"Access-Control-Allow-Origin",
-		"Access-Control-Allow-Headers",
-		"Access-Control-Allow-Methods",
 	}
 	config.AllowCredentials = false
 	config.ExposeHeaders = []string{"Content-Length", "Content-Type"}
