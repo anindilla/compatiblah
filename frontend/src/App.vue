@@ -175,107 +175,74 @@ async function submitAssessment() {
     partner_explanation: { sections: [] }
   }
 
-  try {
-    const categories = [
-      { key: 'friend', label: 'Friendship' },
-      { key: 'coworker', label: 'Workplace' },
-      { key: 'partner', label: 'Romance' }
-    ]
-
-    // Make sequential API calls for each category
-    for (const category of categories) {
-      loadingCategory.value = category.key
-
-      const response = await fetch(`${apiUrl.value}/api/assess/category`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          person1: person1.value,
-          person2: person2.value,
-          category: category.key
-        })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(`Failed to assess ${category.label}: ${errorData.error || `HTTP error! status: ${response.status}`}`)
-      }
-
-      const data = await response.json()
-      
-      // Log for debugging
-      console.log(`Received ${category.key} data:`, data)
-      
-      // Normalize explanations to structured format with subcategories and bullets
-      const normalizeExplanation = (explanation) => {
-      if (!explanation) {
-        return { sections: [] }
-      }
-      
-      // If already structured with subcategories (new format), return as is
-      if (explanation.sections && Array.isArray(explanation.sections)) {
-        // Check if sections have subcategories (new format)
-        const hasSubcategories = explanation.sections.some(s => s.subcategories && Array.isArray(s.subcategories))
-        if (hasSubcategories) {
-          return explanation
-        }
-        
-        // If sections exist but have old 'content' field, convert to subcategories
-        return {
-          sections: explanation.sections.map(section => ({
-            heading: section.heading || 'Compatibility Analysis',
-            subcategories: convertContentToSubcategories(section.content || '')
-          }))
-        }
-      }
-      
-      // If it's a string (oldest format), convert to structured
-      if (typeof explanation === 'string') {
-        return {
-          sections: [{
-            heading: 'Compatibility Analysis',
-            subcategories: convertContentToSubcategories(explanation)
-          }]
-        }
-      }
-      
-      // Fallback
+  // Normalize explanations to structured format with subcategories and bullets
+  const normalizeExplanation = (explanation) => {
+    if (!explanation) {
       return { sections: [] }
+    }
+    
+    // If already structured with subcategories (new format), return as is
+    if (explanation.sections && Array.isArray(explanation.sections)) {
+      // Check if sections have subcategories (new format)
+      const hasSubcategories = explanation.sections.some(s => s.subcategories && Array.isArray(s.subcategories))
+      if (hasSubcategories) {
+        return explanation
+      }
+      
+      // If sections exist but have old 'content' field, convert to subcategories
+      return {
+        sections: explanation.sections.map(section => ({
+          heading: section.heading || 'Compatibility Analysis',
+          subcategories: convertContentToSubcategories(section.content || '')
+        }))
+      }
+    }
+    
+    // If it's a string (oldest format), convert to structured
+    if (typeof explanation === 'string') {
+      return {
+        sections: [{
+          heading: 'Compatibility Analysis',
+          subcategories: convertContentToSubcategories(explanation)
+        }]
+      }
+    }
+    
+    // Fallback
+    return { sections: [] }
   }
   
   // Convert content string to subcategories with bullets
   const convertContentToSubcategories = (content) => {
-      if (!content) {
-        return [{
-          title: 'Compatibility Analysis',
-          bullets: [{ text: 'Analysis details are being prepared.' }]
-        }]
-      }
-      
-      // Split into sentences/paragraphs and create bullets
-      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0)
-      const bullets = sentences.map(s => ({ text: s.trim() + (s.trim().match(/[.!?]$/) ? '' : '.') }))
-      
-      // Group bullets into subcategories (3-5 bullets each)
-      const subcategories = []
-      const bulletsPerSubcat = 4
-      
-      for (let i = 0; i < bullets.length; i += bulletsPerSubcat) {
-        const subcatBullets = bullets.slice(i, i + bulletsPerSubcat)
-        if (subcatBullets.length > 0) {
-          subcategories.push({
-            title: i === 0 ? 'Key Insights' : i < bullets.length / 2 ? 'Additional Points' : 'Considerations',
-            bullets: subcatBullets
-          })
-        }
-      }
-      
-      return subcategories.length > 0 ? subcategories : [{
+    if (!content) {
+      return [{
         title: 'Compatibility Analysis',
-        bullets: [{ text: content }]
+        bullets: [{ text: 'Analysis details are being prepared.' }]
       }]
+    }
+    
+    // Split into sentences/paragraphs and create bullets
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0)
+    const bullets = sentences.map(s => ({ text: s.trim() + (s.trim().match(/[.!?]$/) ? '' : '.') }))
+    
+    // Group bullets into subcategories (3-5 bullets each)
+    const subcategories = []
+    const bulletsPerSubcat = 4
+    
+    for (let i = 0; i < bullets.length; i += bulletsPerSubcat) {
+      const subcatBullets = bullets.slice(i, i + bulletsPerSubcat)
+      if (subcatBullets.length > 0) {
+        subcategories.push({
+          title: i === 0 ? 'Key Insights' : i < bullets.length / 2 ? 'Additional Points' : 'Considerations',
+          bullets: subcatBullets
+        })
+      }
+    }
+    
+    return subcategories.length > 0 ? subcategories : [{
+      title: 'Compatibility Analysis',
+      bullets: [{ text: content }]
+    }]
   }
 
   try {
