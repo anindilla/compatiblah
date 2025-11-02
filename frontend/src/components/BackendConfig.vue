@@ -66,10 +66,10 @@ async function tryAutoDetect() {
   const projectName = hostname.replace(/\.vercel\.app.*/, '')
   
   const patterns = [
-    `https://compatiblah-backend.onrender.com`,
     `https://compatiblah.onrender.com`,
-    `https://${projectName}-backend.onrender.com`,
+    `https://compatiblah-backend.onrender.com`,
     `https://${projectName}.onrender.com`,
+    `https://${projectName}-backend.onrender.com`,
   ]
   
   // Try each pattern

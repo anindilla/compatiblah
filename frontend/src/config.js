@@ -61,10 +61,10 @@ export async function getApiUrl() {
     // Try common Render patterns (Render is the deployment target)
     const projectName = hostname.replace(/\.vercel\.app.*/, '');
     const possibleUrls = [
-      `https://compatiblah-backend.onrender.com`,
       `https://compatiblah.onrender.com`,
-      `https://${projectName}-backend.onrender.com`,
+      `https://compatiblah-backend.onrender.com`,
       `https://${projectName}.onrender.com`,
+      `https://${projectName}-backend.onrender.com`,
     ];
     
     // Return first pattern (user will see config dialog if wrong)
