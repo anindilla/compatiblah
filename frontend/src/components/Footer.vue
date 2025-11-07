@@ -8,7 +8,7 @@
           <span>Privacy & Data Protection</span>
         </h3>
         <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-          Your privacy matters to us. All information you provide (including names, MBTI types, social media handles, and any additional data) is used <strong>solely</strong> for generating compatibility assessments via the Gemini API. We do <strong>NOT</strong> store any personal information (names, MBTI types, social media handles, or additional parameters) in our database. Only the assessment results (scores and explanations) are saved, identified by a unique ID. Your personal data is never stored, shared, sold, or misused. Your social media links and other data will never be used for spam, marketing, stalking, harassment, or any harmful purposes. Your data is yours, and we respect that.
+          Your privacy matters to us. The only personal details we ask for—names and MBTI types—are used <strong>solely</strong> to generate compatibility assessments via the Gemini API. We do <strong>NOT</strong> store any personal information in our database. Only the assessment results (scores and explanations) are saved, identified by a unique ID. Your personal data is never stored, shared, sold, or misused. Your data is yours, and we respect that.
         </p>
       </div>
 

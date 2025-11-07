@@ -5,8 +5,7 @@
 - [x] **PersonForm.vue** - Complete with:
   - Name input (required)
   - MBTI dropdown (16 types, required)
-  - Social media fields (platform dropdown + handle)
-  - Dynamic "Add New Parameter" functionality
+  - Real-time validation feedback
   - Form validation
   - Accessibility (ARIA labels, required fields)
 
@@ -127,8 +126,7 @@ npm run dev
 
 - ✅ Two person input forms
 - ✅ MBTI type selection
-- ✅ Social media input (platform dropdown + handle)
-- ✅ Dynamic parameter addition
+- ✅ Hybrid MBTI scoring engine (Gemini + heuristics)
 - ✅ Compatibility assessment (Friend/Coworker/Partner)
 - ✅ Star ratings (1-5)
 - ✅ Detailed explanations

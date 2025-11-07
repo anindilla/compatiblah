@@ -109,15 +109,11 @@ function onBackendConfigured(url) {
 }
 const person1 = ref({
   name: '',
-  mbti: '',
-  socialMedia: [],
-  additionalParams: []
+  mbti: ''
 })
 const person2 = ref({
   name: '',
-  mbti: '',
-  socialMedia: [],
-  additionalParams: []
+  mbti: ''
 })
 const loading = ref(false)
 const error = ref(null)
@@ -133,15 +129,11 @@ function resetForm() {
   // Reset all form data
   person1.value = {
     name: '',
-    mbti: '',
-    socialMedia: [],
-    additionalParams: []
+    mbti: ''
   }
   person2.value = {
     name: '',
-    mbti: '',
-    socialMedia: [],
-    additionalParams: []
+    mbti: ''
   }
   // Clear results and errors
   results.value = null

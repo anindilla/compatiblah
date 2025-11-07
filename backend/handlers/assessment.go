@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"net/http"
 	"compatiblah/backend/db"
 	"compatiblah/backend/models"
 	"compatiblah/backend/services"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"net/http"
 )
 
 func AssessCompatibility(c *gin.Context) {
@@ -54,14 +54,14 @@ func AssessCompatibility(c *gin.Context) {
 
 	// Return response
 	c.JSON(http.StatusOK, gin.H{
-		"id":                    assessment.ID,
-		"friend_score":          assessment.FriendScore,
-		"coworker_score":        assessment.CoworkerScore,
-		"partner_score":         assessment.PartnerScore,
-		"overall_score":         assessment.OverallScore,
-		"friend_explanation":    assessment.FriendExplanation,
-		"coworker_explanation":  assessment.CoworkerExplanation,
-		"partner_explanation":   assessment.PartnerExplanation,
+		"id":                   assessment.ID,
+		"friend_score":         assessment.FriendScore,
+		"coworker_score":       assessment.CoworkerScore,
+		"partner_score":        assessment.PartnerScore,
+		"overall_score":        assessment.OverallScore,
+		"friend_explanation":   assessment.FriendExplanation,
+		"coworker_explanation": assessment.CoworkerExplanation,
+		"partner_explanation":  assessment.PartnerExplanation,
 	})
 }
 
@@ -80,15 +80,15 @@ func GetAssessment(c *gin.Context) {
 
 	// Return only assessment results, NOT personal data (privacy-first)
 	c.JSON(http.StatusOK, gin.H{
-		"id":                    assessment.ID,
-		"friend_score":          assessment.FriendScore,
-		"coworker_score":        assessment.CoworkerScore,
-		"partner_score":         assessment.PartnerScore,
-		"overall_score":         assessment.OverallScore,
-		"friend_explanation":    assessment.FriendExplanation,
-		"coworker_explanation":  assessment.CoworkerExplanation,
-		"partner_explanation":   assessment.PartnerExplanation,
-		"created_at":            assessment.CreatedAt,
+		"id":                   assessment.ID,
+		"friend_score":         assessment.FriendScore,
+		"coworker_score":       assessment.CoworkerScore,
+		"partner_score":        assessment.PartnerScore,
+		"overall_score":        assessment.OverallScore,
+		"friend_explanation":   assessment.FriendExplanation,
+		"coworker_explanation": assessment.CoworkerExplanation,
+		"partner_explanation":  assessment.PartnerExplanation,
+		"created_at":           assessment.CreatedAt,
 	})
 }
 
@@ -104,9 +104,9 @@ func GetAllAssessments(c *gin.Context) {
 
 // CategoryAssessmentRequest represents a request for a single category assessment
 type CategoryAssessmentRequest struct {
-	Person1 models.PersonData `json:"person1"`
-	Person2 models.PersonData `json:"person2"`
-	Category string           `json:"category"` // "friend", "coworker", or "partner"
+	Person1  models.PersonData `json:"person1"`
+	Person2  models.PersonData `json:"person2"`
+	Category string            `json:"category"` // "friend", "coworker", or "partner"
 }
 
 func AssessCategory(c *gin.Context) {
@@ -133,20 +133,24 @@ func AssessCategory(c *gin.Context) {
 		return
 	}
 
-	// Call Gemini API for single category
-	categoryResp, err := services.AssessCategoryCompatibility(req.Person1, req.Person2, req.Category)
+	// Call Gemini API for the requested category
+	categoryResp, err := services.AssessCategoryCompatibility(
+		req.Person1,
+		req.Person2,
+		req.Category,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assess category compatibility: " + err.Error()})
 		return
 	}
 
-	// Return response
+	// Return enhanced response
 	response := gin.H{
 		"category":    req.Category,
 		"score":       categoryResp.Score,
 		"explanation": categoryResp.Explanation,
+		"source":      "gemini",
 	}
 
 	c.JSON(http.StatusOK, response)
 }
-

@@ -33,8 +33,7 @@
 
 ### **5. Features**
 - ✅ Name & MBTI required (validated)
-- ✅ Social media optional (can start empty)
-- ✅ Dynamic parameter addition working
+- ✅ Hybrid scoring produces varied 1–5 star results per category
 - ✅ Results show star ratings (1-5)
 - ✅ Detailed explanations displayed
 - ✅ Assessment ID generated and displayed

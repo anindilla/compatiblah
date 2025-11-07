@@ -1,11 +1,11 @@
 package db
 
 import (
+	"compatiblah/backend/models"
 	"database/sql"
 	"fmt"
-	"compatiblah/backend/models"
 	"time"
-	
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -38,7 +38,11 @@ func InitDB(dbPath string) error {
 	`
 
 	_, err = DB.Exec(createTableQuery)
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func migrateIfNeeded() error {
@@ -49,7 +53,7 @@ func migrateIfNeeded() error {
 		FROM sqlite_master 
 		WHERE type='table' AND name='assessments'
 	`).Scan(&exists)
-	
+
 	if err != nil || !exists {
 		return nil // Table doesn't exist yet, no migration needed
 	}
@@ -215,4 +219,3 @@ func GetAllAssessments() ([]*models.Assessment, error) {
 
 	return assessments, rows.Err()
 }
-

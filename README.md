@@ -4,7 +4,7 @@ A compatibility assessment web application that analyzes compatibility between t
 
 ## 🚀 Features
 
-- **AI-Powered Analysis**: Uses Google Gemini AI to provide comprehensive compatibility assessments
+- **Hybrid AI Scoring**: Blends Google Gemini explanations with an in-house MBTI scoring engine for varied, context-aware star ratings
 - **Three Contexts**: Evaluates compatibility as friends, coworkers, and partners
 - **Progressive Generation**: Results appear progressively as each category is analyzed (friend → coworker → partner)
 - **Structured Results**: Detailed analysis with sections, subcategories, and 2-3 concise bullet points each
@@ -161,7 +161,7 @@ compatiblah/
 
 ## 🔄 How It Works
 
-1. **User Input**: Enter names, MBTI types, optional social media, and additional parameters
+1. **User Input**: Enter names and MBTI types for both people
 2. **Sequential Processing**: Frontend makes 3 sequential API calls to `/api/assess/category`:
    - First: Friendship compatibility
    - Second: Workplace compatibility  
@@ -176,9 +176,8 @@ compatiblah/
 
 ## 🎨 Features in Detail
 
-- **MBTI Compatibility**: Analyzes personality types for compatibility
-- **Social Media Integration**: Optional social media profile analysis (only used if accessible)
-- **Additional Parameters**: Support for zodiac signs, DISC, Enneagram, and custom parameters
+- **MBTI Compatibility**: Analyzes personality types for compatibility using category-specific heuristics
+- **Gemini-Augmented Insights**: Gemini produces rich narratives while our scoring engine keeps stars honest (1–5)
 - **Progressive Loading**: Categories are generated sequentially, showing results as they complete
 - **Structured Explanations**: 
   - 3+ sections per category

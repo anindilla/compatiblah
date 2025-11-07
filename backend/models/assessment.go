@@ -7,36 +7,24 @@ import (
 )
 
 type PersonData struct {
-	Name             string           `json:"name"`
-	MBTI             string           `json:"mbti"`
-	SocialMedia      []SocialMedia    `json:"socialMedia"`
-	AdditionalParams []AdditionalParam `json:"additionalParams"`
-}
-
-type SocialMedia struct {
-	Platform string `json:"platform"`
-	Handle   string `json:"handle"`
-}
-
-type AdditionalParam struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+	Name string `json:"name"`
+	MBTI string `json:"mbti"`
 }
 
 type Assessment struct {
-	ID                   string             `json:"id" db:"id"`
-	Person1Name          string             `json:"person1_name" db:"person1_name"`
-	Person1Data          PersonData         `json:"person1_data" db:"person1_data"`
-	Person2Name          string             `json:"person2_name" db:"person2_name"`
-	Person2Data          PersonData         `json:"person2_data" db:"person2_data"`
-	FriendScore          int                `json:"friend_score" db:"friend_score"`
-	CoworkerScore        int                `json:"coworker_score" db:"coworker_score"`
-	PartnerScore         int                `json:"partner_score" db:"partner_score"`
-	OverallScore         int                `json:"overall_score" db:"overall_score"`
-	FriendExplanation    CategoryExplanation `json:"friend_explanation" db:"friend_explanation"`
-	CoworkerExplanation  CategoryExplanation `json:"coworker_explanation" db:"coworker_explanation"`
-	PartnerExplanation   CategoryExplanation `json:"partner_explanation" db:"partner_explanation"`
-	CreatedAt            time.Time          `json:"created_at" db:"created_at"`
+	ID                  string              `json:"id" db:"id"`
+	Person1Name         string              `json:"person1_name" db:"person1_name"`
+	Person1Data         PersonData          `json:"person1_data" db:"person1_data"`
+	Person2Name         string              `json:"person2_name" db:"person2_name"`
+	Person2Data         PersonData          `json:"person2_data" db:"person2_data"`
+	FriendScore         int                 `json:"friend_score" db:"friend_score"`
+	CoworkerScore       int                 `json:"coworker_score" db:"coworker_score"`
+	PartnerScore        int                 `json:"partner_score" db:"partner_score"`
+	OverallScore        int                 `json:"overall_score" db:"overall_score"`
+	FriendExplanation   CategoryExplanation `json:"friend_explanation" db:"friend_explanation"`
+	CoworkerExplanation CategoryExplanation `json:"coworker_explanation" db:"coworker_explanation"`
+	PartnerExplanation  CategoryExplanation `json:"partner_explanation" db:"partner_explanation"`
+	CreatedAt           time.Time           `json:"created_at" db:"created_at"`
 }
 
 type AssessmentRequest struct {
@@ -49,12 +37,12 @@ type BulletPoint struct {
 }
 
 type SubCategory struct {
-	Title   string       `json:"title"`
+	Title   string        `json:"title"`
 	Bullets []BulletPoint `json:"bullets"`
 }
 
 type ExplanationSection struct {
-	Heading      string        `json:"heading"`
+	Heading       string        `json:"heading"`
 	Subcategories []SubCategory `json:"subcategories"`
 }
 
@@ -63,13 +51,13 @@ type CategoryExplanation struct {
 }
 
 type GeminiResponse struct {
-	FriendScore          int                `json:"friend_score"`
-	CoworkerScore        int                `json:"coworker_score"`
-	PartnerScore         int                `json:"partner_score"`
-	OverallScore         int                `json:"overall_score"`
-	FriendExplanation    CategoryExplanation `json:"friend_explanation"`
-	CoworkerExplanation  CategoryExplanation `json:"coworker_explanation"`
-	PartnerExplanation   CategoryExplanation `json:"partner_explanation"`
+	FriendScore         int                 `json:"friend_score"`
+	CoworkerScore       int                 `json:"coworker_score"`
+	PartnerScore        int                 `json:"partner_score"`
+	OverallScore        int                 `json:"overall_score"`
+	FriendExplanation   CategoryExplanation `json:"friend_explanation"`
+	CoworkerExplanation CategoryExplanation `json:"coworker_explanation"`
+	PartnerExplanation  CategoryExplanation `json:"partner_explanation"`
 }
 
 // Value implements driver.Valuer for PersonData
@@ -105,4 +93,3 @@ func (c *CategoryExplanation) Scan(value interface{}) error {
 	}
 	return json.Unmarshal(bytes, c)
 }
-
